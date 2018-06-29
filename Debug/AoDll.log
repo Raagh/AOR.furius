@@ -1,0 +1,11 @@
+﻿  stdafx.cpp
+  Player.cpp
+  AoDll.cpp
+c:\users\diego_patrimonio\documents\cheat\cheat con ver invi\aodll.cpp(572): warning C4018: '<': no coinciden signed/unsigned
+c:\users\diego_patrimonio\documents\cheat\cheat con ver invi\aodll.cpp(662): warning C4101: 'e': variable local sin referencia
+  Generando código...
+  dllmain.cpp
+detours.lib(detours.obj) : warning LNK4099: no se encontró PDB 'detours.pdb' con 'detours.lib(detours.obj)' o en 'C:\Users\Diego_Patrimonio\Documents\CHEAT\CHEAT CON VER INVI\Debug\detours.pdb'; se vinculará el objeto sin tener en cuenta información de depuración
+detours.lib(disasm.obj) : warning LNK4099: no se encontró PDB 'detours.pdb' con 'detours.lib(disasm.obj)' o en 'C:\Users\Diego_Patrimonio\Documents\CHEAT\CHEAT CON VER INVI\Debug\detours.pdb'; se vinculará el objeto sin tener en cuenta información de depuración
+  AoDll.vcxproj -> C:\Users\Diego_Patrimonio\Documents\CHEAT\CHEAT CON VER INVI\Debug\AoDll.dll
+  AoDll.vcxproj -> C:\Users\Diego_Patrimonio\Documents\CHEAT\CHEAT CON VER INVI\Debug\AoDll.pdb (Partial PDB)
