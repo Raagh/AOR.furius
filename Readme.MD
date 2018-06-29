@@ -1,5 +1,4 @@
-=================================================================================================================================================
-    AOR : Argentum Online Raagh Project Overview - Coke && Code @2016
+   # AOR : Argentum Online Raagh Project Overview - Coke && Code @2016
 =================================================================================================================================================
 Este proyecto es una dll que permite el cheating en el MOD de Argentum Online FuriusAO.
 
@@ -17,9 +16,9 @@ Mensajes por consola - El cheat envia msjs por la consola del juego para indicar
 
 Dev: Paticio Ferraggi @Raagh 
 
-/////////////////////////////////////////////////////////////////////////////
-Se agradece a Lahod, Delshire, Gabyx, Meson y Wolftein por su ayuda en el proceso de aprendizaje tanto de C/C++
-como en el hacking de juegos online.
-/////////////////////////////////////////////////////////////////////////////
+
+# Se agradece a Lahod, Delshire, Gabyx, Meson y Wolftein por su ayuda en el proceso de aprendizaje tanto de C/C++
+# como en el hacking de juegos online.
+
 
 
