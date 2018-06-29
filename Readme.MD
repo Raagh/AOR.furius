@@ -16,9 +16,8 @@ Mensajes por consola - El cheat envia msjs por la consola del juego para indicar
 
 Dev: Paticio Ferraggi @Raagh 
 
-
-# Se agradece a Lahod, Delshire, Gabyx, Meson y Wolftein por su ayuda en el proceso de aprendizaje tanto de C/C++
-# como en el hacking de juegos online.
+Se agradece a Lahod, Delshire, Gabyx, Meson y Wolftein por su ayuda en el proceso de aprendizaje tanto de C/C++
+como en el hacking de juegos online.
 
 
 
