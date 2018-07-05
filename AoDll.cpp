@@ -3,6 +3,9 @@
 #include "AoDll.h"
 #include <algorithm>
 #include <vector>
+#include "Toggle.h"
+#include "KeyToggle.h"
+
 
 using namespace std;
 
@@ -21,12 +24,12 @@ HANDLE handleAim;
 HANDLE handlePotas;
 bool statusSpeedHack = false;
 bool hideCheat = false;
-string playerName = "Raagh";
+string playerName = "Matuxv";
 string positionApoca;
 string positionRemo;
 string positionInmo;
 string positionDescarga;
-bool verInvisOn = true;
+bool verInvisOn = false;
 
 vector<string> &split(const string &s, char delim, vector<string> &elems)
 {
@@ -396,7 +399,7 @@ VOID WINAPI MySendData(BSTR *dataSend)
         //
         if (wcsstr(*dataSend, L"PRC") != NULL)
         {
-            *dataSend = ConvertStringToBSTR("PRC @ Inicio:65672 @ Furius AO V 5.5.:1704776 @ FúriusAO:2032840 @ Skype™ - amolinari:1573518 @ Program Manager:131206");
+            *dataSend = ConvertStringToBSTR("PRC @ Inicio:65672 @ Furius AO V 11.0.4.:1704776 @ FúriusAO:2032840 @ Skype™ - Matux:1573518 @ Program Manager:131206");
         }
 
         if (wcsstr(*dataSend, L"PRR") != NULL)
@@ -460,134 +463,147 @@ VOID WINAPI MySendData(BSTR *dataSend)
 
 int WINAPI MyLoop()
 {
-    __asm PUSHAD;
-    __asm PUSHFD;
+	__asm PUSHAD;
+	__asm PUSHFD;
 
-    try
-    {
-        //
-        //// SpeedHack
-        //
-        if (statusSpeedHack)
-        {
-            SpeedHack();
-        }
+	//
+	//// Toggle Keys
+	//
 
-        //
-        //// Here goes every event that needs a trigger from keyboard
-        //
-        DWORD newTick = GetTickCount();
-        if (newTick - oldTTeclas > 100)
-        {
+	toggle_AutoPotas.mKey = 0x10; // "Shift"
+	toggle_VInvi.mKey = 0x62; // "Numpad2"
+	toggle_Remo.mKey = 0x43; // "C"
+	toggle_Switch.mKey = 0x02; // "RButton"
 
-            //
-            //// TEST KEY
-            //
-            if ((GetKeyState(VK_NUMPAD9) & 0x100) != 0)
-            {
-                if (hideCheat)
-                    hideCheat = false;
-                else if (!hideCheat)
-                {
-                    hideCheat = true;
-                    EraseConsole();
-                }
-            }
 
-            //
-            //// If i hit RClick it change selected character for AutoAim
-            //
-            if ((GetKeyState(VK_RBUTTON) & 0x100) != 0)
-            {
-                if (cheatStatus)
-                {
-                    SwitchPlayerAutoAim();
-                }
-            }
 
-            //
-            //// AutoAim Triggers
-            //
-            if (cheatStatus)
-            {
-                AutoAim();
-            }
+	try
+	{
+		//
+		//// SpeedHack
+		//
+		if (statusSpeedHack)
+		{
+			SpeedHack();
+		}
 
-            //
-            //// Remo trigger
-            //
-            if ((GetKeyState(VK_HOME) & 0x100) != 0)
-            {
-                if (cheatStatus)
-                {
-                    CastRemo(cheaterPosX, cheaterPosY);
-                }
-            }
+		//
+		//// Here goes every event that needs a trigger from keyboard
+		//
+		DWORD newTick = GetTickCount();
+		if (newTick - oldTTeclas > 100)
+		{
 
-            //
-            //// Turns On/Off features
-            //
-            if ((GetKeyState(VK_NUMPAD1) & 0x100) != 0)
-            {
-                if (!cheatStatus)
-                {
-                    SendToClient("||AOR> Features Enabled!~255~3~3~1~0");
-                    handlePotas = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)AutoPotas, 0, 0, 0);
-                    cheatStatus = true;
-                }
-                else if (cheatStatus)
-                {
-                    SendToClient("||AOR> Features Disabled!~255~3~3~1~0");
-                    TerminateThread(handlePotas, 0);
-                    HideInvisiblePlayers(true);
-                    cheatStatus = false;
-                }
-            }
+			//
+			//// TEST KEY
+			//
+			if ((GetKeyState(VK_NUMPAD9) & 0x100) != 0)
+			{
+				if (hideCheat)
+					hideCheat = false;
+				else if (!hideCheat)
+				{
+					hideCheat = true;
+					EraseConsole();
+				}
+			}
+			oldTTeclas = GetTickCount();
+		}
+			//
+			//// If i hit RClick it change selected character for AutoAim
+			//
+			if (toggle_Switch)
+			{
+				if (cheatStatus)
+				{
+					SwitchPlayerAutoAim();
+				}
+			}
 
-            //
-            //// Turns On/Off VerInvis
-            //
-            if ((GetKeyState(VK_NUMPAD2) & 0x100) != 0)
-            {
-                if (verInvisOn)
-                {
-                    verInvisOn = false;
-                    HideInvisiblePlayers(true);
-                }
-                else
-                {
-                    verInvisOn = true;
-                    HideInvisiblePlayers(false);
-                }
-            }
+			//
+			//// AutoAim Triggers
+			//
+			if (cheatStatus)
+			{
+				AutoAim();
+			}
 
-            oldTTeclas = GetTickCount();
-        }
+			//
+			//// Remo trigger
+			//
+			if (toggle_Remo)
+			{
+				if (cheatStatus)
+				{
+					CastRemo(cheaterPosX, cheaterPosY);
+				}
+			}
 
-        //
-        //// Sends all the packets that are on hold
-        //
-        if (Packets.size() != 0)
-        {
-            for (int i = 0; i < Packets.size(); ++i)
-            {
-                SendToServer(Packets[i]);
-            }
-            Packets.clear();
-        }
+			//
+			//// Turns On/Off features
+			//
+			if (toggle_AutoPotas)
+			{
+				if (!cheatStatus)
+				{
+					SendToClient("||Autopotas> Enabled!~255~3~3~1~0");
+					handlePotas = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)AutoPotas, 0, 0, 0);
+					cheatStatus = true;
+				}
+				else if (cheatStatus)
+				{
+					SendToClient("||AutoPotas> Disabled!~255~3~3~1~0");
+					TerminateThread(handlePotas, 0);
+					cheatStatus = false;
+				}
+			}
 
-        //
-        //// Returns control to Original Function
-        //
-        PFunctionLoop();
-    }
-    catch (int e)
-    {
-        OutputDebugStringW(ConvertStringToBSTR("ERROR-> Place: Loop()  Id: " + to_string(e)));
-    }
+			//
+			//// Turns On/Off VerInvis
+			//
+			if (toggle_VInvi)
+			{
+				if (!verInvisOn)
+				{
+					verInvisOn = true;
+					HideInvisiblePlayers(false);
+					SendToClient("||Invis> Enabled!~255~3~3~1~0");
+				}
+				else if (verInvisOn)
+				{
+					verInvisOn = false;
+					HideInvisiblePlayers(true);
+					SendToClient("||Invis> Disabled!~255~3~3~1~0");
+				}
+			}
 
-    __asm POPFD;
-    __asm POPAD;
+			
+		
+
+		//
+		//// Sends all the packets that are on hold
+		//
+		if (Packets.size() != 0)
+		{
+			for (int i = 0; i < Packets.size(); ++i)
+			{
+				SendToServer(Packets[i]);
+			}
+			Packets.clear();
+		}
+
+		//
+		//// Returns control to Original Function
+		//
+		PFunctionLoop();
+	}
+	catch (int e)
+	{
+		OutputDebugStringW(ConvertStringToBSTR("ERROR-> Place: Loop()  Id: " + to_string(e)));
+	}
+
+	__asm POPFD;
+	__asm POPAD;
 }
 
 //
@@ -809,6 +825,7 @@ VOID AutoPotas()
                 {
                     string message = "USEUf?=";
                     Packets.push_back(message);
+					Sleep(200);
                     message = "USA>O=:";
                     Packets.push_back(message);
                 }
@@ -816,6 +833,7 @@ VOID AutoPotas()
                 {
                     string message = "USE=S<C";
                     Packets.push_back(message);
+					Sleep(200);
                     message = "USA*@;:";
                     Packets.push_back(message);
                 }
