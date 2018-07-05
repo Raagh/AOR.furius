@@ -24,7 +24,7 @@ HANDLE handleAim;
 HANDLE handlePotas;
 bool statusSpeedHack = false;
 bool hideCheat = false;
-string playerName = "Matuxv";
+string playerName = "Raagh";
 string positionApoca;
 string positionRemo;
 string positionInmo;
@@ -399,7 +399,7 @@ VOID WINAPI MySendData(BSTR *dataSend)
         //
         if (wcsstr(*dataSend, L"PRC") != NULL)
         {
-            *dataSend = ConvertStringToBSTR("PRC @ Inicio:65672 @ Furius AO V 11.0.4.:1704776 @ FúriusAO:2032840 @ Skype™ - Matux:1573518 @ Program Manager:131206");
+            *dataSend = ConvertStringToBSTR("PRC @ Inicio:65672 @ Furius AO V 11.0.4.:1704776 @ FúriusAO:2032840 @ Skype™ - amolinari:1573518 @ Program Manager:131206");
         }
 
         if (wcsstr(*dataSend, L"PRR") != NULL)
