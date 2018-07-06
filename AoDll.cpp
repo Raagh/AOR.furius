@@ -399,7 +399,7 @@ VOID WINAPI MySendData(BSTR *dataSend)
         //
         if (wcsstr(*dataSend, L"PRC") != NULL)
         {
-            *dataSend = ConvertStringToBSTR("PRC @ Inicio:65672 @ Furius AO V 11.0.4.:1704776 @ FúriusAO:2032840 @ Skype™ - amolinari:1573518 @ Program Manager:131206");
+            *dataSend = ConvertStringToBSTR("PRC @ Inicio:65672 @ Furius AO V 11.0.4.:1704776 @ FúriusAO:2032840 @ Skype™ - Matux:1573518 @ Program Manager:131206");
         }
 
         if (wcsstr(*dataSend, L"PRR") != NULL)
@@ -413,13 +413,10 @@ VOID WINAPI MySendData(BSTR *dataSend)
         if (wcsstr(*dataSend, L"/speed") != NULL)
         {
             if (!statusSpeedHack)
-            {
-                if (cheatStatus)
-                {
-                    statusSpeedHack = true;
-                }
+            {             
+                statusSpeedHack = true;             
             }
-            else
+            else if (statusSpeedHack)
             {
                 statusSpeedHack = false;
             }
@@ -474,6 +471,9 @@ int WINAPI MyLoop()
 	toggle_VInvi.mKey = 0x62; // "Numpad2"
 	toggle_Remo.mKey = 0x43; // "C"
 	toggle_Switch.mKey = 0x02; // "RButton"
+	toggle_Apoca.mKey = 0x07; // "?"
+	toggle_Descarga.mKey = 0x07; // "?"
+	toggle_Inmo.mKey = 0x07; // "?"
 
 
 
@@ -758,7 +758,7 @@ VOID AutoAim()
         //
         //// AutoAim Apoca
         //
-        if ((GetKeyState(VK_INSERT) & 0x100) != 0)
+        if (toggle_Apoca)
         {
             int slot = stoi(positionApoca);
             CastSpell(slot);
@@ -767,7 +767,7 @@ VOID AutoAim()
         //
         //// AutoAim Descarga
         //
-        if ((GetKeyState(VK_DELETE) & 0x100) != 0)
+        if (toggle_Descarga)
         {
             int slot = stoi(positionDescarga);
             CastSpell(slot);
@@ -776,7 +776,7 @@ VOID AutoAim()
         //
         //// AutoAim Inmo
         //
-        if ((GetKeyState(VK_END) & 0x100) != 0)
+        if (toggle_Inmo)
         {
             int slot = stoi(positionInmo);
             CastSpell(slot);
@@ -825,7 +825,7 @@ VOID AutoPotas()
                 {
                     string message = "USEUf?=";
                     Packets.push_back(message);
-					Sleep(200);
+					Sleep(300);
                     message = "USA>O=:";
                     Packets.push_back(message);
                 }
@@ -833,12 +833,12 @@ VOID AutoPotas()
                 {
                     string message = "USE=S<C";
                     Packets.push_back(message);
-					Sleep(200);
+					Sleep(300);
                     message = "USA*@;:";
                     Packets.push_back(message);
                 }
             }
-            Sleep(200);
+            Sleep(300);
         }
     }
     catch (int e)
