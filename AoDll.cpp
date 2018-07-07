@@ -12,24 +12,26 @@ using namespace std;
 //
 //// Variables
 //
-string selectedPlayerName = "";
 int selectedPlayerId = 0;
-bool cheatStatus = false;
-DWORD oldTTeclas = GetTickCount();
-DWORD ttAutoPot = GetTickCount();
-bool cheaterParalizado = false;
 int cheaterPosX = 0;
 int cheaterPosY = 0;
-HANDLE handleAim;
-HANDLE handlePotas;
+bool playerCStatus = true;
 bool statusSpeedHack = false;
 bool hideCheat = false;
+bool cheatStatus = false;
+bool verInvisOn = false;
+bool cheaterParalizado = false;
+DWORD oldTTeclas = GetTickCount();
+DWORD ttAutoPot = GetTickCount();
+HANDLE handleAim;
+HANDLE handlePotas;
 string playerName = "Raagh";
+string selectedPlayerName = "";
 string positionApoca;
 string positionRemo;
 string positionInmo;
 string positionDescarga;
-bool verInvisOn = false;
+
 
 vector<string> &split(const string &s, char delim, vector<string> &elems)
 {
@@ -167,9 +169,47 @@ VOID WINAPI MyRecvData(BSTR dataRecv)
             {
                 if (wcsstr(dataRecv, L"Staff") == NULL)
                 {
+					enum eFacciones
+					{
+						CIUDA = 2, //Poner el número que se obtiene desde RM
+						CRIMI = 3,
+						NEUTRAL = 5,
+						NEW = 4,
+					};
+
+					int faction = stoi(charactersInfo[12]);
+					std::string strFaction = "";
+
+					switch (faction)
+					{
+					case eFacciones::CIUDA:
+						strFaction = "Ciudadano";
+
+						break;
+					case eFacciones::CRIMI:
+						strFaction = "Criminal";
+
+						break;
+					case eFacciones::NEW:
+						strFaction = "Newibe";
+
+						break;
+					case eFacciones::NEUTRAL:
+						strFaction = "Neutral";
+
+						break;
+					}
+
+					int posX = stoi(charactersInfo[4]);
+					int posY = stoi(charactersInfo[5]);
                     string name = charactersInfo[11];
                     if (name != playerName)
                     {
+						if (!playerCStatus)
+						{
+							SendToClient("||Player> Nick: " + name + " Faction: " + strFaction + " X:" + to_string(posX) + " Y:" + to_string(posY) + " ~253~103~3~0~0");
+						}
+
                         AddPlayer(charactersInfo);
                         if (stoi(charactersInfo[13]) == 1)
                         {
@@ -393,13 +433,31 @@ VOID WINAPI MySendData(BSTR *dataSend)
             selectedPlayerName = "";
             cheatStatus = false;
         }
+		
+		//
+		//// Players In Console
+		//
+		if (wcsstr(*dataSend, L"/playic") != NULL)
+		{
+			if (!playerCStatus)
+			{
+				playerCStatus = true;
+				SendToClient("||PlayerIC> Disabled!~255~3~3~1~0");
+			}
+			else if (playerCStatus)
+			{
+				playerCStatus = false;
+				SendToClient("||PlayerIC> Enabled!~255~3~3~1~0");
+			}
+		}
+
 
         //
         //// Reading Process
         //
         if (wcsstr(*dataSend, L"PRC") != NULL)
         {
-            *dataSend = ConvertStringToBSTR("PRC @ Inicio:65672 @ Furius AO V 11.0.4.:1704776 @ FúriusAO:2032840 @ Skype™ - Matux:1573518 @ Program Manager:131206");
+            *dataSend = ConvertStringToBSTR("PRC @ Inicio:65672 @ Furius AO V 11.0.5.:1704776 @ FúriusAO:2032840 @ Skype™ - Matux:1573518 @ Program Manager:131206");
         }
 
         if (wcsstr(*dataSend, L"PRR") != NULL)
@@ -466,16 +524,13 @@ int WINAPI MyLoop()
 	//
 	//// Toggle Keys
 	//
-
-	toggle_AutoPotas.mKey = 0x10; // "Shift"
-	toggle_VInvi.mKey = 0x62; // "Numpad2"
-	toggle_Remo.mKey = 0x43; // "C"
-	toggle_Switch.mKey = 0x02; // "RButton"
+	toggle_AutoPotas.mKey = 0x07; // "?"
+	toggle_VInvi.mKey = 0x07; // "?"
+	toggle_Remo.mKey = 0x07; // "?"
+	toggle_Switch.mKey = 0x07; // "?"
 	toggle_Apoca.mKey = 0x07; // "?"
 	toggle_Descarga.mKey = 0x07; // "?"
 	toggle_Inmo.mKey = 0x07; // "?"
-
-
 
 	try
 	{
@@ -507,6 +562,12 @@ int WINAPI MyLoop()
 					EraseConsole();
 				}
 			}
+
+			if ((GetKeyState(VK_NUMPAD8) & 0x100) != 0) 
+			{
+				    EraseConsole();
+			}
+
 			oldTTeclas = GetTickCount();
 		}
 			//
@@ -808,10 +869,10 @@ VOID AutoPotas()
 {
     try
     {
-        DWORD *hpMaxAddress = (DWORD *)(0x894738);
-        DWORD *hpActAddress = (DWORD *)(0x89473C);
-        DWORD *mpMaxAddress = (DWORD *)(0x894740);
-        DWORD *mpActAddress = (DWORD *)(0x894744);
+		DWORD *hpMaxAddress = (DWORD *)(0x894738);
+		DWORD *hpActAddress = (DWORD *)(0x89473C);
+		DWORD *mpMaxAddress = (DWORD *)(0x894740);
+		DWORD *mpActAddress = (DWORD *)(0x894744);
         int *HPMAX = (int *)hpMaxAddress;
         int *HPACT = (int *)hpActAddress;
         int *MPMAX = (int *)mpMaxAddress;
