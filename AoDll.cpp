@@ -6,7 +6,6 @@
 #include "Toggle.h"
 #include "KeyToggle.h"
 
-
 using namespace std;
 
 //
@@ -31,7 +30,6 @@ string positionApoca;
 string positionRemo;
 string positionInmo;
 string positionDescarga;
-
 
 vector<string> &split(const string &s, char delim, vector<string> &elems)
 {
@@ -169,39 +167,39 @@ VOID WINAPI MyRecvData(BSTR dataRecv)
             {
                 if (wcsstr(dataRecv, L"Staff") == NULL)
                 {
-					enum eFacciones
-					{
-						CIUDA = 2, //Poner el número que se obtiene desde RM
-						CRIMI = 3,
-						NEUTRAL = 5,
-						NEW = 4,
-					};
+			enum eFacciones
+			{
+				CIUDA = 2,
+				CRIMI = 3,
+				NEUTRAL = 5,
+				NEW = 4,
+			};
 
-					int faction = stoi(charactersInfo[12]);
-					std::string strFaction = "";
+			int faction = stoi(charactersInfo[12]);
+			std::string strFaction = "";
 
-					switch (faction)
-					{
-					case eFacciones::CIUDA:
-						strFaction = "Ciudadano";
+			switch (faction)
+			{
+			case eFacciones::CIUDA:
+				strFaction = "Ciudadano";
 
-						break;
-					case eFacciones::CRIMI:
-						strFaction = "Criminal";
+				break;
+			case eFacciones::CRIMI:
+				strFaction = "Criminal";
 
-						break;
-					case eFacciones::NEW:
-						strFaction = "Newibe";
+				break;
+			case eFacciones::NEW:
+				strFaction = "Newibe";
 
-						break;
-					case eFacciones::NEUTRAL:
-						strFaction = "Neutral";
+				break;
+			case eFacciones::NEUTRAL:
+				strFaction = "Neutral";
 
-						break;
-					}
+				break;
+			}
 
-					int posX = stoi(charactersInfo[4]);
-					int posY = stoi(charactersInfo[5]);
+		    int posX = stoi(charactersInfo[4]);
+          	    int posY = stoi(charactersInfo[5]);
                     string name = charactersInfo[11];
                     if (name != playerName)
                     {
@@ -437,20 +435,19 @@ VOID WINAPI MySendData(BSTR *dataSend)
 		//
 		//// Players In Console
 		//
-		if (wcsstr(*dataSend, L"/playic") != NULL)
+	if (wcsstr(*dataSend, L"/playic") != NULL)
+	{
+		if (!playerCStatus)
 		{
-			if (!playerCStatus)
-			{
-				playerCStatus = true;
-				SendToClient("||PlayerIC> Disabled!~255~3~3~1~0");
-			}
-			else if (playerCStatus)
-			{
-				playerCStatus = false;
-				SendToClient("||PlayerIC> Enabled!~255~3~3~1~0");
-			}
+			playerCStatus = true;
+			SendToClient("||PlayerIC> Disabled!~255~3~3~1~0");
 		}
-
+		else if (playerCStatus)
+		{
+			playerCStatus = false;
+			SendToClient("||PlayerIC> Enabled!~255~3~3~1~0");
+		}
+	}
 
         //
         //// Reading Process
