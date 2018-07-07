@@ -59,10 +59,10 @@ vector<string /*Packet*/> Packets;
 //// Pointer Functions Declarations
 //
 typedef VOID(WINAPI *PRecvData)(BSTR data);    //Pointer Definition - Takes BSTR and returns VOID
-PRecvData PFunctionRecv = (PRecvData)0x7078C0; //Pointer to where the original HandleData() starts
+PRecvData PFunctionRecv = (PRecvData)0x731220; //Pointer to where the original HandleData() starts
 
 typedef VOID(WINAPI *PSendData)(BSTR *data);   //Pointer Definition - Takes BSTR* and returns VOID
-PSendData PFunctionSend = (PSendData)0x75D570; //Pointer to where the original SendData() starts
+PSendData PFunctionSend = (PSendData)0x7867D0; //Pointer to where the original SendData() starts
 
 typedef int(WINAPI *PLoop)();
 HMODULE dllModule = LoadLibraryA("MSVBVM60.DLL");
@@ -808,10 +808,10 @@ VOID AutoPotas()
 {
     try
     {
-        DWORD *hpMaxAddress = (DWORD *)(0x86A730);
-        DWORD *hpActAddress = (DWORD *)(0x86A734);
-        DWORD *mpMaxAddress = (DWORD *)(0x86A738);
-        DWORD *mpActAddress = (DWORD *)(0x86A73C);
+        DWORD *hpMaxAddress = (DWORD *)(0x894738);
+        DWORD *hpActAddress = (DWORD *)(0x89473C);
+        DWORD *mpMaxAddress = (DWORD *)(0x894740);
+        DWORD *mpActAddress = (DWORD *)(0x894744);
         int *HPMAX = (int *)hpMaxAddress;
         int *HPACT = (int *)hpActAddress;
         int *MPMAX = (int *)mpMaxAddress;
