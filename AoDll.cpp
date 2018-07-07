@@ -6,6 +6,7 @@
 #include "Toggle.h"
 #include "KeyToggle.h"
 
+
 using namespace std;
 
 //
@@ -30,6 +31,7 @@ string positionApoca;
 string positionRemo;
 string positionInmo;
 string positionDescarga;
+
 
 vector<string> &split(const string &s, char delim, vector<string> &elems)
 {
@@ -167,39 +169,39 @@ VOID WINAPI MyRecvData(BSTR dataRecv)
             {
                 if (wcsstr(dataRecv, L"Staff") == NULL)
                 {
-			enum eFacciones
-			{
-				CIUDA = 2,
-				CRIMI = 3,
-				NEUTRAL = 5,
-				NEW = 4,
-			};
+					enum eFacciones
+					{
+						CIUDA = 2, //Poner el número que se obtiene desde RM
+						CRIMI = 3,
+						NEUTRAL = 5,
+						NEW = 4,
+					};
 
-			int faction = stoi(charactersInfo[12]);
-			std::string strFaction = "";
+					int faction = stoi(charactersInfo[12]);
+					std::string strFaction = "";
 
-			switch (faction)
-			{
-			case eFacciones::CIUDA:
-				strFaction = "Ciudadano";
+					switch (faction)
+					{
+					case eFacciones::CIUDA:
+						strFaction = "Ciudadano";
 
-				break;
-			case eFacciones::CRIMI:
-				strFaction = "Criminal";
+						break;
+					case eFacciones::CRIMI:
+						strFaction = "Criminal";
 
-				break;
-			case eFacciones::NEW:
-				strFaction = "Newibe";
+						break;
+					case eFacciones::NEW:
+						strFaction = "Newibe";
 
-				break;
-			case eFacciones::NEUTRAL:
-				strFaction = "Neutral";
+						break;
+					case eFacciones::NEUTRAL:
+						strFaction = "Neutral";
 
-				break;
-			}
+						break;
+					}
 
-		    int posX = stoi(charactersInfo[4]);
-          	    int posY = stoi(charactersInfo[5]);
+					int posX = stoi(charactersInfo[4]);
+					int posY = stoi(charactersInfo[5]);
                     string name = charactersInfo[11];
                     if (name != playerName)
                     {
@@ -265,8 +267,8 @@ VOID WINAPI MyRecvData(BSTR dataRecv)
                         selectedPlayerId = idPlayer;
                         Player *newPlayer = new Player();
                         newPlayer->id = idPlayer;
-                        newPlayer->posX = posX;
-                        newPlayer->posY = posY;
+                        newPlayer->posX = posY;
+                        newPlayer->posY = posX;
                         newPlayer->name = name;
                         newPlayer->faction = alianza;
                         CharactersInRange.insert(std::pair<int, Player *>(idPlayer, newPlayer));
@@ -277,15 +279,15 @@ VOID WINAPI MyRecvData(BSTR dataRecv)
                         auto itRange = CharactersInRange.find(idPlayer);
                         if (itRange != CharactersInRange.end())
                         {
-                            itRange->second->posX = posX;
-                            itRange->second->posY = posY;
+                            itRange->second->posX = posY;
+                            itRange->second->posY = posX;
                         }
                         else
                         {
                             Player *newPlayer = new Player();
                             newPlayer->name = name;
-                            newPlayer->posX = posX;
-                            newPlayer->posY = posY;
+                            newPlayer->posX = posY;
+                            newPlayer->posY = posX;
                             newPlayer->faction = alianza;
                             CharactersInRange.insert(std::pair<int, Player *>(idPlayer, newPlayer));
                         }
@@ -357,10 +359,8 @@ VOID WINAPI MyRecvData(BSTR dataRecv)
 
                 int posY = stoi(splitVector[0].substr(2));
                 int posX = stoi(splitVector[1]);
-                cheaterPosX = posX;
-                cheaterPosY = posY;
-
-                //CastRemo(posX, posY);
+                cheaterPosX = posY;
+                cheaterPosY = posX;	
             }
         }
 
@@ -435,19 +435,20 @@ VOID WINAPI MySendData(BSTR *dataSend)
 		//
 		//// Players In Console
 		//
-	if (wcsstr(*dataSend, L"/playic") != NULL)
-	{
-		if (!playerCStatus)
+		if (wcsstr(*dataSend, L"/playic") != NULL)
 		{
-			playerCStatus = true;
-			SendToClient("||PlayerIC> Disabled!~255~3~3~1~0");
+			if (!playerCStatus)
+			{
+				playerCStatus = true;
+				SendToClient("||PlayerIC> Disabled!~255~3~3~1~0");
+			}
+			else if (playerCStatus)
+			{
+				playerCStatus = false;
+				SendToClient("||PlayerIC> Enabled!~255~3~3~1~0");
+			}
 		}
-		else if (playerCStatus)
-		{
-			playerCStatus = false;
-			SendToClient("||PlayerIC> Enabled!~255~3~3~1~0");
-		}
-	}
+
 
         //
         //// Reading Process
@@ -521,13 +522,13 @@ int WINAPI MyLoop()
 	//
 	//// Toggle Keys
 	//
-	toggle_AutoPotas.mKey = 0x07; // "?"
-	toggle_VInvi.mKey = 0x07; // "?"
-	toggle_Remo.mKey = 0x07; // "?"
-	toggle_Switch.mKey = 0x07; // "?"
+	toggle_AutoPotas.mKey = 0x51; // "Q"
+	toggle_VInvi.mKey = 0x62; // "Numpad2"
+	toggle_Remo.mKey = 0x04; // "MButton"
+	toggle_Switch.mKey = 0x02; // "RButton"
 	toggle_Apoca.mKey = 0x07; // "?"
 	toggle_Descarga.mKey = 0x07; // "?"
-	toggle_Inmo.mKey = 0x07; // "?"
+	toggle_Inmo.mKey = 0x43; // "C"
 
 	try
 	{
@@ -591,10 +592,7 @@ int WINAPI MyLoop()
 			//
 			if (toggle_Remo)
 			{
-				if (cheatStatus)
-				{
 					CastRemo(cheaterPosX, cheaterPosY);
-				}
 			}
 
 			//
