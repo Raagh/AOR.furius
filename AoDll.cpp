@@ -5,7 +5,7 @@
 #include <vector>
 #include "Toggle.h"
 #include "KeyToggle.h"
-
+#include <iostream>
 
 using namespace std;
 
@@ -25,13 +25,14 @@ DWORD oldTTeclas = GetTickCount();
 DWORD ttAutoPot = GetTickCount();
 HANDLE handleAim;
 HANDLE handlePotas;
-string playerName = "Raagh";
+string playerName = "";
 string selectedPlayerName = "";
 string positionApoca;
 string positionRemo;
 string positionInmo;
 string positionDescarga;
 
+FILE *fpstdin = stdin, *fpstdout = stdout, *fpstderr = stderr;
 
 vector<string> &split(const string &s, char delim, vector<string> &elems)
 {
@@ -446,6 +447,25 @@ VOID WINAPI MySendData(BSTR *dataSend)
 			{
 				playerCStatus = false;
 				SendToClient("||PlayerIC> Enabled!~255~3~3~1~0");
+			}
+		}
+
+		if (wcsstr(*dataSend, L"/name") != NULL)
+		{
+			AllocConsole();
+			SetConsoleTitle(_T("AOR"));
+			freopen_s(&fpstdin, "CONIN$", "r", stdin);
+			freopen_s(&fpstdout, "CONOUT$", "w", stdout);
+			freopen_s(&fpstderr, "CONOUT$", "w", stderr);
+			{
+				cout << "Ingrese su nick: " << endl;
+				cin >> playerName;
+				system("CLS");
+				cout << "Nick Guardado como " << playerName << "." << endl;
+				Sleep(1000);
+				system("CLS");
+				cout << "Puedes cerrar esta ventana." << endl;
+				FreeConsole();
 			}
 		}
 
@@ -872,13 +892,13 @@ VOID AutoPotas()
         int *HPACT = (int *)hpActAddress;
         int *MPMAX = (int *)mpMaxAddress;
         int *MPACT = (int *)mpActAddress;
-
+		
         while (true)
         {
             if (*HPACT != 0)
             {
                 if (*HPACT != *HPMAX)
-                {
+				{
                     string message = "USEUf?=";
                     Packets.push_back(message);
 					Sleep(300);
