@@ -3,30 +3,36 @@
 #include "AoDll.h"
 #include <algorithm>
 #include <vector>
+#include "Toggle.h"
+#include "KeyToggle.h"
+#include <iostream>
 
 using namespace std;
 
 //
 //// Variables
 //
-string selectedPlayerName = "";
 int selectedPlayerId = 0;
-bool cheatStatus = false;
-DWORD oldTTeclas = GetTickCount();
-DWORD ttAutoPot = GetTickCount();
-bool cheaterParalizado = false;
 int cheaterPosX = 0;
 int cheaterPosY = 0;
-HANDLE handleAim;
-HANDLE handlePotas;
+bool playerCStatus = true;
 bool statusSpeedHack = false;
 bool hideCheat = false;
-string playerName = "Raagh";
+bool cheatStatus = false;
+bool verInvisOn = false;
+bool cheaterParalizado = false;
+DWORD oldTTeclas = GetTickCount();
+DWORD ttAutoPot = GetTickCount();
+HANDLE handleAim;
+HANDLE handlePotas;
+string playerName = "";
+string selectedPlayerName = "";
 string positionApoca;
 string positionRemo;
 string positionInmo;
 string positionDescarga;
-bool verInvisOn = true;
+
+FILE *fpstdin = stdin, *fpstdout = stdout, *fpstderr = stderr;
 
 vector<string> &split(const string &s, char delim, vector<string> &elems)
 {
@@ -56,10 +62,10 @@ vector<string /*Packet*/> Packets;
 //// Pointer Functions Declarations
 //
 typedef VOID(WINAPI *PRecvData)(BSTR data);    //Pointer Definition - Takes BSTR and returns VOID
-PRecvData PFunctionRecv = (PRecvData)0x7078C0; //Pointer to where the original HandleData() starts
+PRecvData PFunctionRecv = (PRecvData)0x731220; //Pointer to where the original HandleData() starts
 
 typedef VOID(WINAPI *PSendData)(BSTR *data);   //Pointer Definition - Takes BSTR* and returns VOID
-PSendData PFunctionSend = (PSendData)0x75D570; //Pointer to where the original SendData() starts
+PSendData PFunctionSend = (PSendData)0x7867D0; //Pointer to where the original SendData() starts
 
 typedef int(WINAPI *PLoop)();
 HMODULE dllModule = LoadLibraryA("MSVBVM60.DLL");
@@ -164,9 +170,47 @@ VOID WINAPI MyRecvData(BSTR dataRecv)
             {
                 if (wcsstr(dataRecv, L"Staff") == NULL)
                 {
+					enum eFacciones
+					{
+						CIUDA = 2, //Poner el número que se obtiene desde RM
+						CRIMI = 3,
+						NEUTRAL = 5,
+						NEW = 4,
+					};
+
+					int faction = stoi(charactersInfo[12]);
+					std::string strFaction = "";
+
+					switch (faction)
+					{
+					case eFacciones::CIUDA:
+						strFaction = "Ciudadano";
+
+						break;
+					case eFacciones::CRIMI:
+						strFaction = "Criminal";
+
+						break;
+					case eFacciones::NEW:
+						strFaction = "Newibe";
+
+						break;
+					case eFacciones::NEUTRAL:
+						strFaction = "Neutral";
+
+						break;
+					}
+
+					int posX = stoi(charactersInfo[4]);
+					int posY = stoi(charactersInfo[5]);
                     string name = charactersInfo[11];
                     if (name != playerName)
                     {
+						if (!playerCStatus)
+						{
+							SendToClient("||Player> Nick: " + name + " Faction: " + strFaction + " X:" + to_string(posX) + " Y:" + to_string(posY) + " ~253~103~3~0~0");
+						}
+
                         AddPlayer(charactersInfo);
                         if (stoi(charactersInfo[13]) == 1)
                         {
@@ -224,8 +268,8 @@ VOID WINAPI MyRecvData(BSTR dataRecv)
                         selectedPlayerId = idPlayer;
                         Player *newPlayer = new Player();
                         newPlayer->id = idPlayer;
-                        newPlayer->posX = posX;
-                        newPlayer->posY = posY;
+                        newPlayer->posX = posY;
+                        newPlayer->posY = posX;
                         newPlayer->name = name;
                         newPlayer->faction = alianza;
                         CharactersInRange.insert(std::pair<int, Player *>(idPlayer, newPlayer));
@@ -236,15 +280,15 @@ VOID WINAPI MyRecvData(BSTR dataRecv)
                         auto itRange = CharactersInRange.find(idPlayer);
                         if (itRange != CharactersInRange.end())
                         {
-                            itRange->second->posX = posX;
-                            itRange->second->posY = posY;
+                            itRange->second->posX = posY;
+                            itRange->second->posY = posX;
                         }
                         else
                         {
                             Player *newPlayer = new Player();
                             newPlayer->name = name;
-                            newPlayer->posX = posX;
-                            newPlayer->posY = posY;
+                            newPlayer->posX = posY;
+                            newPlayer->posY = posX;
                             newPlayer->faction = alianza;
                             CharactersInRange.insert(std::pair<int, Player *>(idPlayer, newPlayer));
                         }
@@ -316,10 +360,8 @@ VOID WINAPI MyRecvData(BSTR dataRecv)
 
                 int posY = stoi(splitVector[0].substr(2));
                 int posX = stoi(splitVector[1]);
-                cheaterPosX = posX;
-                cheaterPosY = posY;
-
-                //CastRemo(posX, posY);
+                cheaterPosX = posY;
+                cheaterPosY = posX;	
             }
         }
 
@@ -390,13 +432,50 @@ VOID WINAPI MySendData(BSTR *dataSend)
             selectedPlayerName = "";
             cheatStatus = false;
         }
+		
+		//
+		//// Players In Console
+		//
+		if (wcsstr(*dataSend, L"/playic") != NULL)
+		{
+			if (!playerCStatus)
+			{
+				playerCStatus = true;
+				SendToClient("||PlayerIC> Disabled!~255~3~3~1~0");
+			}
+			else if (playerCStatus)
+			{
+				playerCStatus = false;
+				SendToClient("||PlayerIC> Enabled!~255~3~3~1~0");
+			}
+		}
+
+		if (wcsstr(*dataSend, L"/name") != NULL)
+		{
+			AllocConsole();
+			SetConsoleTitle(_T("AOR"));
+			freopen_s(&fpstdin, "CONIN$", "r", stdin);
+			freopen_s(&fpstdout, "CONOUT$", "w", stdout);
+			freopen_s(&fpstderr, "CONOUT$", "w", stderr);
+			{
+				cout << "Ingrese su nick: " << endl;
+				cin >> playerName;
+				system("CLS");
+				cout << "Nick Guardado como " << playerName << "." << endl;
+				Sleep(1000);
+				system("CLS");
+				cout << "Puedes cerrar esta ventana." << endl;
+				FreeConsole();
+			}
+		}
+
 
         //
         //// Reading Process
         //
         if (wcsstr(*dataSend, L"PRC") != NULL)
         {
-            *dataSend = ConvertStringToBSTR("PRC @ Inicio:65672 @ Furius AO V 5.5.:1704776 @ FúriusAO:2032840 @ Skype™ - amolinari:1573518 @ Program Manager:131206");
+            *dataSend = ConvertStringToBSTR("PRC @ Inicio:65672 @ Furius AO V 11.0.5.:1704776 @ FúriusAO:2032840 @ Skype™ - Matux:1573518 @ Program Manager:131206");
         }
 
         if (wcsstr(*dataSend, L"PRR") != NULL)
@@ -410,13 +489,10 @@ VOID WINAPI MySendData(BSTR *dataSend)
         if (wcsstr(*dataSend, L"/speed") != NULL)
         {
             if (!statusSpeedHack)
-            {
-                if (cheatStatus)
-                {
-                    statusSpeedHack = true;
-                }
+            {             
+                statusSpeedHack = true;             
             }
-            else
+            else if (statusSpeedHack)
             {
                 statusSpeedHack = false;
             }
@@ -460,134 +536,150 @@ VOID WINAPI MySendData(BSTR *dataSend)
 
 int WINAPI MyLoop()
 {
-    __asm PUSHAD;
-    __asm PUSHFD;
+	__asm PUSHAD;
+	__asm PUSHFD;
 
-    try
-    {
-        //
-        //// SpeedHack
-        //
-        if (statusSpeedHack)
-        {
-            SpeedHack();
-        }
+	//
+	//// Toggle Keys
+	//
+	toggle_AutoPotas.mKey = 0x51; // "Q"
+	toggle_VInvi.mKey = 0x62; // "Numpad2"
+	toggle_Remo.mKey = 0x04; // "MButton"
+	toggle_Switch.mKey = 0x02; // "RButton"
+	toggle_Apoca.mKey = 0x07; // "?"
+	toggle_Descarga.mKey = 0x07; // "?"
+	toggle_Inmo.mKey = 0x43; // "C"
 
-        //
-        //// Here goes every event that needs a trigger from keyboard
-        //
-        DWORD newTick = GetTickCount();
-        if (newTick - oldTTeclas > 100)
-        {
+	try
+	{
+		//
+		//// SpeedHack
+		//
+		if (statusSpeedHack)
+		{
+			SpeedHack();
+		}
 
-            //
-            //// TEST KEY
-            //
-            if ((GetKeyState(VK_NUMPAD9) & 0x100) != 0)
-            {
-                if (hideCheat)
-                    hideCheat = false;
-                else if (!hideCheat)
-                {
-                    hideCheat = true;
-                    EraseConsole();
-                }
-            }
+		//
+		//// Here goes every event that needs a trigger from keyboard
+		//
+		DWORD newTick = GetTickCount();
+		if (newTick - oldTTeclas > 100)
+		{
 
-            //
-            //// If i hit RClick it change selected character for AutoAim
-            //
-            if ((GetKeyState(VK_RBUTTON) & 0x100) != 0)
-            {
-                if (cheatStatus)
-                {
-                    SwitchPlayerAutoAim();
-                }
-            }
+			//
+			//// TEST KEY
+			//
+			if ((GetKeyState(VK_NUMPAD9) & 0x100) != 0)
+			{
+				if (hideCheat)
+					hideCheat = false;
+				else if (!hideCheat)
+				{
+					hideCheat = true;
+					EraseConsole();
+				}
+			}
 
-            //
-            //// AutoAim Triggers
-            //
-            if (cheatStatus)
-            {
-                AutoAim();
-            }
+			if ((GetKeyState(VK_NUMPAD8) & 0x100) != 0) 
+			{
+				    EraseConsole();
+			}
 
-            //
-            //// Remo trigger
-            //
-            if ((GetKeyState(VK_HOME) & 0x100) != 0)
-            {
-                if (cheatStatus)
-                {
-                    CastRemo(cheaterPosX, cheaterPosY);
-                }
-            }
+			oldTTeclas = GetTickCount();
+		}
+			//
+			//// If i hit RClick it change selected character for AutoAim
+			//
+			if (toggle_Switch)
+			{
+				if (cheatStatus)
+				{
+					SwitchPlayerAutoAim();
+				}
+			}
 
-            //
-            //// Turns On/Off features
-            //
-            if ((GetKeyState(VK_NUMPAD1) & 0x100) != 0)
-            {
-                if (!cheatStatus)
-                {
-                    SendToClient("||AOR> Features Enabled!~255~3~3~1~0");
-                    handlePotas = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)AutoPotas, 0, 0, 0);
-                    cheatStatus = true;
-                }
-                else if (cheatStatus)
-                {
-                    SendToClient("||AOR> Features Disabled!~255~3~3~1~0");
-                    TerminateThread(handlePotas, 0);
-                    HideInvisiblePlayers(true);
-                    cheatStatus = false;
-                }
-            }
+			//
+			//// AutoAim Triggers
+			//
+			if (cheatStatus)
+			{
+				AutoAim();
+			}
 
-            //
-            //// Turns On/Off VerInvis
-            //
-            if ((GetKeyState(VK_NUMPAD2) & 0x100) != 0)
-            {
-                if (verInvisOn)
-                {
-                    verInvisOn = false;
-                    HideInvisiblePlayers(true);
-                }
-                else
-                {
-                    verInvisOn = true;
-                    HideInvisiblePlayers(false);
-                }
-            }
+			//
+			//// Remo trigger
+			//
+			if (toggle_Remo)
+			{
+					CastRemo(cheaterPosX, cheaterPosY);
+			}
 
-            oldTTeclas = GetTickCount();
-        }
+			//
+			//// Turns On/Off features
+			//
+			if (toggle_AutoPotas)
+			{
+				if (!cheatStatus)
+				{
+					SendToClient("||Autopotas> Enabled!~255~3~3~1~0");
+					handlePotas = CreateThread(0, 0, (LPTHREAD_START_ROUTINE)AutoPotas, 0, 0, 0);
+					cheatStatus = true;
+				}
+				else if (cheatStatus)
+				{
+					SendToClient("||AutoPotas> Disabled!~255~3~3~1~0");
+					TerminateThread(handlePotas, 0);
+					cheatStatus = false;
+				}
+			}
 
-        //
-        //// Sends all the packets that are on hold
-        //
-        if (Packets.size() != 0)
-        {
-            for (int i = 0; i < Packets.size(); ++i)
-            {
-                SendToServer(Packets[i]);
-            }
-            Packets.clear();
-        }
+			//
+			//// Turns On/Off VerInvis
+			//
+			if (toggle_VInvi)
+			{
+				if (!verInvisOn)
+				{
+					verInvisOn = true;
+					HideInvisiblePlayers(false);
+					SendToClient("||Invis> Enabled!~255~3~3~1~0");
+				}
+				else if (verInvisOn)
+				{
+					verInvisOn = false;
+					HideInvisiblePlayers(true);
+					SendToClient("||Invis> Disabled!~255~3~3~1~0");
+				}
+			}
 
-        //
-        //// Returns control to Original Function
-        //
-        PFunctionLoop();
-    }
-    catch (int e)
-    {
-        OutputDebugStringW(ConvertStringToBSTR("ERROR-> Place: Loop()  Id: " + to_string(e)));
-    }
+			
+		
 
-    __asm POPFD;
-    __asm POPAD;
+		//
+		//// Sends all the packets that are on hold
+		//
+		if (Packets.size() != 0)
+		{
+			for (int i = 0; i < Packets.size(); ++i)
+			{
+				SendToServer(Packets[i]);
+			}
+			Packets.clear();
+		}
+
+		//
+		//// Returns control to Original Function
+		//
+		PFunctionLoop();
+	}
+	catch (int e)
+	{
+		OutputDebugStringW(ConvertStringToBSTR("ERROR-> Place: Loop()  Id: " + to_string(e)));
+	}
+
+	__asm POPFD;
+	__asm POPAD;
 }
 
 //
@@ -742,7 +834,7 @@ VOID AutoAim()
         //
         //// AutoAim Apoca
         //
-        if ((GetKeyState(VK_INSERT) & 0x100) != 0)
+        if (toggle_Apoca)
         {
             int slot = stoi(positionApoca);
             CastSpell(slot);
@@ -751,7 +843,7 @@ VOID AutoAim()
         //
         //// AutoAim Descarga
         //
-        if ((GetKeyState(VK_DELETE) & 0x100) != 0)
+        if (toggle_Descarga)
         {
             int slot = stoi(positionDescarga);
             CastSpell(slot);
@@ -760,7 +852,7 @@ VOID AutoAim()
         //
         //// AutoAim Inmo
         //
-        if ((GetKeyState(VK_END) & 0x100) != 0)
+        if (toggle_Inmo)
         {
             int slot = stoi(positionInmo);
             CastSpell(slot);
@@ -792,23 +884,24 @@ VOID AutoPotas()
 {
     try
     {
-        DWORD *hpMaxAddress = (DWORD *)(0x86A730);
-        DWORD *hpActAddress = (DWORD *)(0x86A734);
-        DWORD *mpMaxAddress = (DWORD *)(0x86A738);
-        DWORD *mpActAddress = (DWORD *)(0x86A73C);
+		DWORD *hpMaxAddress = (DWORD *)(0x894738);
+		DWORD *hpActAddress = (DWORD *)(0x89473C);
+		DWORD *mpMaxAddress = (DWORD *)(0x894740);
+		DWORD *mpActAddress = (DWORD *)(0x894744);
         int *HPMAX = (int *)hpMaxAddress;
         int *HPACT = (int *)hpActAddress;
         int *MPMAX = (int *)mpMaxAddress;
         int *MPACT = (int *)mpActAddress;
-
+		
         while (true)
         {
             if (*HPACT != 0)
             {
                 if (*HPACT != *HPMAX)
-                {
+				{
                     string message = "USEUf?=";
                     Packets.push_back(message);
+					Sleep(300);
                     message = "USA>O=:";
                     Packets.push_back(message);
                 }
@@ -816,11 +909,12 @@ VOID AutoPotas()
                 {
                     string message = "USE=S<C";
                     Packets.push_back(message);
+					Sleep(300);
                     message = "USA*@;:";
                     Packets.push_back(message);
                 }
             }
-            Sleep(200);
+            Sleep(300);
         }
     }
     catch (int e)
